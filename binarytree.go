@@ -34,28 +34,28 @@ func NewBinaryTreeNode(element interface{}) *BinaryTreeNode {
 	return node
 }
 
-func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeNode, int) {
+func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeNode, int, error) {
 	var dif int
 	var parent *BinaryTreeNode
 	current := tree.Head
 	if current == nil {
-		return nil, nil, 0
+		return nil, nil, 1, errors.New("No head")
 	}
 	for {
 		dif = tree.CompareFunc(element, current.Element)
 		if dif == 0 {
-			return current, parent, dif
+			return current, parent, dif, nil
 		} else if dif > 0 {
 			if current.Right == nil {
 				parent = current
-				return current, parent, dif
+				return current, parent, dif, nil
 			} else {
 				parent = current
 				current = current.Right
 			}
 		} else {
 			if current.Left == nil {
-				return current, parent, dif
+				return current, parent, dif, nil
 			} else {
 				parent = current
 				current = current.Left
@@ -70,7 +70,10 @@ func (tree *BinaryTree) Add(element interface{}) (*BinaryTreeNode, error) {
 		tree.Size++
 		return tree.Head, nil
 	} else {
-		currentNode, _, dif := tree.near(element)
+		currentNode, _, dif, err := tree.near(element)
+		if err != nil {
+			return nil, err
+		}
 		if dif == 0 {
 			return currentNode, errors.New("The input element is equal to an element in tree")
 		} else if dif > 0 {
@@ -97,7 +100,10 @@ func (tree *BinaryTree) join(node1 *BinaryTreeNode, node2 *BinaryTreeNode) *Bina
 }
 
 func (tree *BinaryTree) Search(element interface{}) (interface{}, error) {
-	node, _, dif := tree.near(element)
+	node, _, dif, err := tree.near(element)
+	if err != nil {
+		return nil, err
+	}
 	if dif == 0 {
 		return node.Element, nil
 	} else {
@@ -106,7 +112,10 @@ func (tree *BinaryTree) Search(element interface{}) (interface{}, error) {
 }
 
 func (tree *BinaryTree) Remove(element interface{}) error {
-	node, parent, dif := tree.near(element)
+	node, parent, dif, err := tree.near(element)
+	if err != nil {
+		return err
+	}
 	if dif == 0 {
 		return tree.remove(node, parent)
 	} else {
