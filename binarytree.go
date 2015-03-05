@@ -5,6 +5,7 @@ package container
 
 import (
 	"errors"
+	"reflect"
 )
 
 type Compare func(interface{}, interface{}) int
@@ -64,26 +65,26 @@ func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeN
 	}
 }
 
-func (tree *BinaryTree) Add(element interface{}) (*BinaryTreeNode, error) {
+func (tree *BinaryTree) Add(element interface{}) error {
 	if tree.Head == nil {
 		tree.Head = NewBinaryTreeNode(element)
 		tree.Size++
-		return tree.Head, nil
+		return nil
 	} else {
 		currentNode, _, dif, err := tree.near(element)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if dif == 0 {
-			return currentNode, errors.New("The input element is equal to an element in tree")
+			return errors.New("The input element is equal to an element in tree")
 		} else if dif > 0 {
 			currentNode.Right = NewBinaryTreeNode(element)
 			tree.Size++
-			return currentNode.Right, nil
+			return nil
 		} else {
 			currentNode.Left = NewBinaryTreeNode(element)
 			tree.Size++
-			return currentNode.Left, nil
+			return nil
 		}
 	}
 }
@@ -146,12 +147,26 @@ func (tree *BinaryTree) remove(node *BinaryTreeNode, parent *BinaryTreeNode) err
 	return nil
 }
 
+func (tree *BinaryTree) GetSize() int {
+	return tree.Size
+}
+
 func (tree *BinaryTree) ToArray() []interface{} {
 	array := make([]interface{}, tree.Size)
 	tree.Visit(func(element interface{}, i int) {
 		array[i] = element
 	})
 	return array
+}
+
+func (tree *BinaryTree) ToArrayOfType(elementType reflect.Type) interface{} {
+	var value reflect.Value
+	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), tree.Size, tree.Size)
+	tree.Visit(func(element interface{}, i int) {
+		value = reflect.ValueOf(element)
+		arrayValue.Index(i).Set(value)
+	})
+	return arrayValue.Interface()
 }
 
 func (tree *BinaryTree) Visit(trait func(element interface{}, i int)) {

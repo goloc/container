@@ -4,13 +4,14 @@
 package container
 
 import (
+	"reflect"
 	"testing"
 )
 
 func TestBinarytree(t *testing.T) {
-	tree := NewBinaryTree(func(e1 interface{}, e2 interface{}) int {
+	tree := Container(NewBinaryTree(func(e1 interface{}, e2 interface{}) int {
 		return e1.(int) - e2.(int)
-	})
+	}))
 	tree.Add(6)
 	tree.Add(8)
 	tree.Add(9)
@@ -20,15 +21,30 @@ func TestBinarytree(t *testing.T) {
 	tree.Add(1)
 	tree.Add(5)
 	tree.Add(7)
-	if tree.Size != 9 {
+	if tree.GetSize() != 9 {
 		t.Fail()
 	}
+
 	array := tree.ToArray()
+	if len(array) != 9 {
+		t.Fail()
+	}
 	for i, v := range array {
 		if v != i+1 {
 			t.Fail()
 		}
 	}
+
+	arrayInt := tree.ToArrayOfType(reflect.TypeOf(0)).([]int)
+	if len(arrayInt) != 9 {
+		t.Fail()
+	}
+	for i, v := range arrayInt {
+		if v != i+1 {
+			t.Fail()
+		}
+	}
+
 	v, err := tree.Search(5)
 	if v != 5 || err != nil {
 		t.Fail()
@@ -44,15 +60,15 @@ func TestBinarytree(t *testing.T) {
 	tree.Add(14)
 	tree.Add(12)
 	tree.Add(13)
-	if tree.Size != 15 {
+	if tree.GetSize() != 15 {
 		t.Fail()
 	}
 
-	_, err = tree.Add(8)
+	err = tree.Add(8)
 	if err == nil {
 		t.Fail()
 	}
-	if tree.Size != 15 {
+	if tree.GetSize() != 15 {
 		t.Fail()
 	}
 
@@ -94,11 +110,11 @@ func TestBinarytree(t *testing.T) {
 	if v != nil || err == nil {
 		t.Fail()
 	}
-	if tree.Size != 11 {
+	if tree.GetSize() != 11 {
 		t.Fail()
 	}
-	array = tree.ToArray()
-	if len(array) != 11 {
+	arrayInt = tree.ToArrayOfType(reflect.TypeOf(0)).([]int)
+	if len(arrayInt) != 11 {
 		t.Fail()
 	}
 }

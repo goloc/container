@@ -19,19 +19,19 @@ func NewLimitedBinaryTree(compare Compare, limit int, preserveMin bool) *Limited
 	return tree
 }
 
-func (tree *LimitedBinaryTree) Add(element interface{}) (*BinaryTreeNode, error) {
+func (tree *LimitedBinaryTree) Add(element interface{}) error {
 	if tree.Size >= tree.Limit {
 		if tree.PreserveMin {
 			max, parent := tree.Head.max()
 			if tree.CompareFunc(element, max.Element) >= 0 {
-				return nil, nil
+				return nil
 			} else {
 				tree.remove(max, parent)
 			}
 		} else {
 			min, parent := tree.Head.min()
 			if tree.CompareFunc(element, min.Element) <= 0 {
-				return nil, nil
+				return nil
 			} else {
 				tree.remove(min, parent)
 			}

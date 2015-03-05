@@ -5,6 +5,7 @@ package container
 
 import (
 	"errors"
+	"reflect"
 )
 
 type LinkedList struct {
@@ -23,7 +24,7 @@ type LinkedListItem struct {
 	Next    *LinkedListItem
 }
 
-func (list *LinkedList) Push(element interface{}) *LinkedListItem {
+func (list *LinkedList) Add(element interface{}) error {
 	li := new(LinkedListItem)
 	li.Element = element
 	if list.Head == nil {
@@ -34,22 +35,25 @@ func (list *LinkedList) Push(element interface{}) *LinkedListItem {
 		list.Ultimate = list.Ultimate.Next
 	}
 	list.Size++
-	return li
+	return nil
 }
 
 func (list *LinkedList) Search(element interface{}) (interface{}, error) {
 	item, _, err := list.search(element)
+	if err != nil {
+		return nil, err
+	}
 	return item.Element, err
 }
 
 func (list *LinkedList) search(element interface{}) (*LinkedListItem, *LinkedListItem, error) {
-	var parent *LinkedListItem
+	var prev *LinkedListItem
 	item := list.Head
 	for item != nil {
-		if item == element {
-			return item, parent, nil
+		if item.Element == element {
+			return item, prev, nil
 		}
-		parent = item
+		prev = item
 		item = item.Next
 	}
 	return nil, nil, errors.New("Element not found")
@@ -68,7 +72,12 @@ func (list *LinkedList) Remove(element interface{}) error {
 		}
 		parent.Next = item.Next
 	}
+	list.Size--
 	return nil
+}
+
+func (list *LinkedList) GetSize() int {
+	return list.Size
 }
 
 func (list *LinkedList) ToArray() []interface{} {
@@ -77,6 +86,16 @@ func (list *LinkedList) ToArray() []interface{} {
 		array[i] = element
 	})
 	return array
+}
+
+func (list *LinkedList) ToArrayOfType(elementType reflect.Type) interface{} {
+	var value reflect.Value
+	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), list.Size, list.Size)
+	list.Visit(func(element interface{}, i int) {
+		value = reflect.ValueOf(element)
+		arrayValue.Index(i).Set(value)
+	})
+	return arrayValue.Interface()
 }
 
 func (list *LinkedList) Visit(trait func(element interface{}, i int)) {

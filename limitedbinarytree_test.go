@@ -4,6 +4,7 @@
 package container
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -23,12 +24,11 @@ func TestLimitedbinarytreePreserveMin(t *testing.T) {
 	if tree.Size != 5 {
 		t.Fail()
 	}
-	array := tree.ToArray()
+	array := tree.ToArrayOfType(reflect.TypeOf(0)).([]int)
 	if len(array) != 5 {
 		t.Fail()
 	}
-	for i, e := range array {
-		v := e.(int)
+	for i, v := range array {
 		if v != i+1 {
 			t.Fail()
 		}
@@ -51,12 +51,11 @@ func TestLimitedbinarytreePreserveMax(t *testing.T) {
 	if tree.Size != 5 {
 		t.Fail()
 	}
-	array := tree.ToArray()
+	array := tree.ToArrayOfType(reflect.TypeOf(0)).([]int)
 	if len(array) != 5 {
 		t.Fail()
 	}
-	for i, e := range array {
-		v := e.(int)
+	for i, v := range array {
 		if v != i+5 {
 			t.Fail()
 		}
