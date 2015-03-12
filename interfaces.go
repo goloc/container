@@ -13,5 +13,6 @@ type Container interface {
 	Search(interface{}) (interface{}, error)
 	Remove(interface{}) error
 	ToArray() []interface{}
-	ToArrayOfType(elementType reflect.Type) interface{}
+	ToArrayOfType(reflect.Type) interface{}
+	Visit(func(interface{}, int))
 }
