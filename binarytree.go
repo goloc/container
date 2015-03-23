@@ -5,6 +5,7 @@ package container
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -65,7 +66,21 @@ func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeN
 	}
 }
 
-func (tree *BinaryTree) Add(element interface{}) error {
+func (tree *BinaryTree) Add(elements ...interface{}) error {
+	errMap := make(map[interface{}]error)
+	for _, element := range elements {
+		if err := tree.add(element); err != nil {
+			errMap[element] = err
+		}
+	}
+	if len(errMap) > 0 {
+		return errors.New(fmt.Sprintf("Errors has occured: %v", errMap))
+	} else {
+		return nil
+	}
+}
+
+func (tree *BinaryTree) add(element interface{}) error {
 	if tree.Head == nil {
 		tree.Head = NewBinaryTreeNode(element)
 		tree.Size++

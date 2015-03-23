@@ -5,6 +5,7 @@ package container
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -24,7 +25,21 @@ type LinkedListItem struct {
 	Next    *LinkedListItem
 }
 
-func (list *LinkedList) Add(element interface{}) error {
+func (list *LinkedList) Add(elements ...interface{}) error {
+	errMap := make(map[interface{}]error)
+	for _, element := range elements {
+		if err := list.add(element); err != nil {
+			errMap[element] = err
+		}
+	}
+	if len(errMap) > 0 {
+		return errors.New(fmt.Sprintf("Errors has occured: %v", errMap))
+	} else {
+		return nil
+	}
+}
+
+func (list *LinkedList) add(element interface{}) error {
 	li := new(LinkedListItem)
 	li.Element = element
 	if list.Head == nil {
