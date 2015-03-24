@@ -8,7 +8,7 @@ import (
 )
 
 type Container interface {
-	Add(...interface{}) error
+	Add(interface{}) error
 	GetSize() int
 	Search(interface{}) (interface{}, error)
 	Remove(interface{}) error

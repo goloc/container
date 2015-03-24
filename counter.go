@@ -3,44 +3,48 @@
 // license that can be found in the LICENSE file.
 package container
 
-import (
-	"sync"
-)
+import ()
 
 type Counter struct {
-	counts map[string]uint32
-	max    uint32
-	mutex  sync.RWMutex
+	BinaryTree
+}
+
+type Count struct {
+	Key string
+	Val int
 }
 
 func NewCounter() *Counter {
-	c := new(Counter)
-	c.counts = make(map[string]uint32)
-	return c
-}
-
-func (c *Counter) Incr(key string) {
-	c.mutex.Lock()
-	c.counts[key]++
-	count := c.counts[key]
-	if count > c.max {
-		c.max = count
+	counter := new(Counter)
+	counter.BinaryTree.CompareFunc = func(r1, r2 interface{}) int {
+		count1 := r1.(*Count)
+		count2 := r2.(*Count)
+		if count1.Key == count2.Key {
+			return 0
+		}
+		dif := count1.Val - count2.Val
+		if dif == 0 {
+			if count1.Key > count2.Key {
+				return 1
+			} else {
+				return -1
+			}
+		} else {
+			return dif
+		}
 	}
-	c.mutex.Unlock()
+	return counter
 }
 
-func (c *Counter) GetMax() uint32 {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
-	return c.max
-}
-
-func (c *Counter) Visit(trait func(key string, count uint32, i int)) {
-	c.mutex.RLock()
-	i := 0
-	for key, count := range c.counts {
-		trait(key, count, i)
-		i++
+func (counter *Counter) Incr(key string, val int) int {
+	counter.mutex.Lock()
+	defer counter.mutex.Unlock()
+	newcount := &Count{Key: key, Val: val}
+	node, parent, dif, err := counter.near(newcount)
+	if err == nil && dif == 0 {
+		newcount.Val += node.Element.(*Count).Val
+		counter.remove(node, parent)
 	}
-	c.mutex.RUnlock()
+	counter.add(newcount)
+	return newcount.Val
 }

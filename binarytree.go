@@ -5,8 +5,8 @@ package container
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
+	"sync"
 )
 
 type Compare func(interface{}, interface{}) int
@@ -15,6 +15,7 @@ type BinaryTree struct {
 	CompareFunc Compare
 	Head        *BinaryTreeNode
 	Size        int
+	mutex       sync.RWMutex
 }
 
 func NewBinaryTree(compare Compare) *BinaryTree {
@@ -66,18 +67,10 @@ func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeN
 	}
 }
 
-func (tree *BinaryTree) Add(elements ...interface{}) error {
-	errMap := make(map[interface{}]error)
-	for _, element := range elements {
-		if err := tree.add(element); err != nil {
-			errMap[element] = err
-		}
-	}
-	if len(errMap) > 0 {
-		return errors.New(fmt.Sprintf("Errors has occured: %v", errMap))
-	} else {
-		return nil
-	}
+func (tree *BinaryTree) Add(element interface{}) error {
+	tree.mutex.Lock()
+	defer tree.mutex.Unlock()
+	return tree.add(element)
 }
 
 func (tree *BinaryTree) add(element interface{}) error {
@@ -116,6 +109,8 @@ func (tree *BinaryTree) join(node1 *BinaryTreeNode, node2 *BinaryTreeNode) *Bina
 }
 
 func (tree *BinaryTree) Search(element interface{}) (interface{}, error) {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
 	node, _, dif, err := tree.near(element)
 	if err != nil {
 		return nil, err
@@ -128,6 +123,8 @@ func (tree *BinaryTree) Search(element interface{}) (interface{}, error) {
 }
 
 func (tree *BinaryTree) Remove(element interface{}) error {
+	tree.mutex.Lock()
+	defer tree.mutex.Unlock()
 	node, parent, dif, err := tree.near(element)
 	if err != nil {
 		return err
@@ -163,10 +160,14 @@ func (tree *BinaryTree) remove(node *BinaryTreeNode, parent *BinaryTreeNode) err
 }
 
 func (tree *BinaryTree) GetSize() int {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
 	return tree.Size
 }
 
 func (tree *BinaryTree) ToArray() []interface{} {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
 	array := make([]interface{}, tree.Size)
 	tree.Visit(func(element interface{}, i int) {
 		array[i] = element
@@ -175,6 +176,8 @@ func (tree *BinaryTree) ToArray() []interface{} {
 }
 
 func (tree *BinaryTree) ToArrayOfType(elementType reflect.Type) interface{} {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
 	var value reflect.Value
 	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), tree.Size, tree.Size)
 	tree.Visit(func(element interface{}, i int) {
@@ -185,6 +188,8 @@ func (tree *BinaryTree) ToArrayOfType(elementType reflect.Type) interface{} {
 }
 
 func (tree *BinaryTree) Visit(trait func(element interface{}, i int)) {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
 	if tree.Head != nil {
 		tree.visit(tree.Head, 0, trait)
 	}
@@ -202,7 +207,18 @@ func (tree *BinaryTree) visit(node *BinaryTreeNode, i int, trait func(element in
 	return i
 }
 
-func (node *BinaryTreeNode) min() (*BinaryTreeNode, *BinaryTreeNode) {
+func (tree *BinaryTree) Left() (interface{}, error) {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
+	current := tree.Head
+	if current == nil {
+		return nil, errors.New("No head")
+	}
+	element, _ := current.left()
+	return element, nil
+}
+
+func (node *BinaryTreeNode) left() (*BinaryTreeNode, *BinaryTreeNode) {
 	var parent *BinaryTreeNode
 	if node != nil {
 		for node.Left != nil {
@@ -213,7 +229,18 @@ func (node *BinaryTreeNode) min() (*BinaryTreeNode, *BinaryTreeNode) {
 	return node, parent
 }
 
-func (node *BinaryTreeNode) max() (*BinaryTreeNode, *BinaryTreeNode) {
+func (tree *BinaryTree) Right() (interface{}, error) {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
+	current := tree.Head
+	if current == nil {
+		return nil, errors.New("No head")
+	}
+	element, _ := current.right()
+	return element, nil
+}
+
+func (node *BinaryTreeNode) right() (*BinaryTreeNode, *BinaryTreeNode) {
 	var parent *BinaryTreeNode
 	if node != nil {
 		for node.Right != nil {

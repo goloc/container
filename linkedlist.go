@@ -5,14 +5,15 @@ package container
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
+	"sync"
 )
 
 type LinkedList struct {
 	Size     int
 	Head     *LinkedListItem
 	Ultimate *LinkedListItem
+	mutex    sync.RWMutex
 }
 
 func NewLinkedList() *LinkedList {
@@ -25,21 +26,9 @@ type LinkedListItem struct {
 	Next    *LinkedListItem
 }
 
-func (list *LinkedList) Add(elements ...interface{}) error {
-	errMap := make(map[interface{}]error)
-	for _, element := range elements {
-		if err := list.add(element); err != nil {
-			errMap[element] = err
-		}
-	}
-	if len(errMap) > 0 {
-		return errors.New(fmt.Sprintf("Errors has occured: %v", errMap))
-	} else {
-		return nil
-	}
-}
-
-func (list *LinkedList) add(element interface{}) error {
+func (list *LinkedList) Add(element interface{}) error {
+	list.mutex.Lock()
+	defer list.mutex.Unlock()
 	li := new(LinkedListItem)
 	li.Element = element
 	if list.Head == nil {
@@ -54,6 +43,8 @@ func (list *LinkedList) add(element interface{}) error {
 }
 
 func (list *LinkedList) Search(element interface{}) (interface{}, error) {
+	list.mutex.RLock()
+	defer list.mutex.RUnlock()
 	item, _, err := list.search(element)
 	if err != nil {
 		return nil, err
@@ -75,6 +66,8 @@ func (list *LinkedList) search(element interface{}) (*LinkedListItem, *LinkedLis
 }
 
 func (list *LinkedList) Remove(element interface{}) error {
+	list.mutex.Lock()
+	defer list.mutex.Unlock()
 	item, parent, err := list.search(element)
 	if err != nil {
 		return err
@@ -92,10 +85,14 @@ func (list *LinkedList) Remove(element interface{}) error {
 }
 
 func (list *LinkedList) GetSize() int {
+	list.mutex.RLock()
+	defer list.mutex.RUnlock()
 	return list.Size
 }
 
 func (list *LinkedList) ToArray() []interface{} {
+	list.mutex.RLock()
+	defer list.mutex.RUnlock()
 	array := make([]interface{}, list.Size)
 	list.Visit(func(element interface{}, i int) {
 		array[i] = element
@@ -104,6 +101,8 @@ func (list *LinkedList) ToArray() []interface{} {
 }
 
 func (list *LinkedList) ToArrayOfType(elementType reflect.Type) interface{} {
+	list.mutex.RLock()
+	defer list.mutex.RUnlock()
 	var value reflect.Value
 	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), list.Size, list.Size)
 	list.Visit(func(element interface{}, i int) {
@@ -114,6 +113,8 @@ func (list *LinkedList) ToArrayOfType(elementType reflect.Type) interface{} {
 }
 
 func (list *LinkedList) Visit(trait func(element interface{}, i int)) {
+	list.mutex.RLock()
+	defer list.mutex.RUnlock()
 	i := 0
 	item := list.Head
 	for item != nil {

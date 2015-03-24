@@ -3,10 +3,7 @@
 // license that can be found in the LICENSE file.
 package container
 
-import (
-	"errors"
-	"fmt"
-)
+import ()
 
 type LimitedBinaryTree struct {
 	BinaryTree
@@ -22,39 +19,27 @@ func NewLimitedBinaryTree(compare Compare, limit int, preserveMin bool) *Limited
 	return tree
 }
 
-func (tree *LimitedBinaryTree) Add(elements ...interface{}) error {
-	errMap := make(map[interface{}]error)
-	for _, element := range elements {
-		if err := tree.add(element); err != nil {
-			errMap[element] = err
-		}
-	}
-	if len(errMap) > 0 {
-		return errors.New(fmt.Sprintf("Errors has occured: %v", errMap))
-	} else {
-		return nil
-	}
-}
-
-func (tree *LimitedBinaryTree) add(element interface{}) error {
+func (tree *LimitedBinaryTree) Add(element interface{}) error {
+	tree.mutex.Lock()
+	defer tree.mutex.Unlock()
 	if tree.Size >= tree.Limit {
 		if tree.PreserveMin {
-			max, parent := tree.Head.max()
+			max, parent := tree.Head.right()
 			if tree.CompareFunc(element, max.Element) >= 0 {
 				return nil
 			} else {
 				tree.remove(max, parent)
 			}
 		} else {
-			min, parent := tree.Head.min()
+			min, parent := tree.Head.left()
 			if tree.CompareFunc(element, min.Element) <= 0 {
 				return nil
 			} else {
 				tree.remove(min, parent)
 			}
 		}
-		return tree.BinaryTree.Add(element)
+		return tree.BinaryTree.add(element)
 	} else {
-		return tree.BinaryTree.Add(element)
+		return tree.BinaryTree.add(element)
 	}
 }
