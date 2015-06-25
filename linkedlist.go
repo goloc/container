@@ -26,6 +26,16 @@ type LinkedListItem struct {
 	Next    *LinkedListItem
 }
 
+func (list *LinkedList) Contains(element interface{}) bool {
+	list.mutex.RLock()
+	defer list.mutex.RUnlock()
+	_, _, err := list.search(element)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (list *LinkedList) Add(element interface{}) error {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()

@@ -67,6 +67,16 @@ func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeN
 	}
 }
 
+func (tree *BinaryTree) Contains(element interface{}) bool {
+	tree.mutex.RLock()
+	defer tree.mutex.RUnlock()
+	_, _, dif, err := tree.near(element)
+	if err == nil && dif == 0 {
+		return true
+	}
+	return false
+}
+
 func (tree *BinaryTree) Add(element interface{}) error {
 	tree.mutex.Lock()
 	defer tree.mutex.Unlock()
