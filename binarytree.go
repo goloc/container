@@ -14,7 +14,7 @@ type Compare func(interface{}, interface{}) int
 type BinaryTree struct {
 	CompareFunc Compare
 	Head        *BinaryTreeNode
-	Size        int
+	size        int
 	mutex       sync.RWMutex
 }
 
@@ -27,13 +27,11 @@ func NewBinaryTree(compare Compare) *BinaryTree {
 type BinaryTreeNode struct {
 	Element     interface{}
 	Left, Right *BinaryTreeNode
-	Size        int
 }
 
 func NewBinaryTreeNode(element interface{}) *BinaryTreeNode {
 	node := new(BinaryTreeNode)
 	node.Element = element
-	node.Size = 1
 	return node
 }
 
@@ -67,6 +65,27 @@ func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeN
 	}
 }
 
+func (tree *BinaryTree) check() {
+	if tree.size <= 0 {
+		if tree.Head == nil {
+			tree.size = 0
+		} else {
+			tree.size = tree.count(tree.Head)
+		}
+	}
+}
+
+func (tree *BinaryTree) count(node *BinaryTreeNode) int {
+	i := 1
+	if node.Left != nil {
+		i += tree.count(node.Left)
+	}
+	if node.Right != nil {
+		i += tree.count(node.Right)
+	}
+	return i
+}
+
 func (tree *BinaryTree) Contains(element interface{}) bool {
 	tree.mutex.RLock()
 	defer tree.mutex.RUnlock()
@@ -80,13 +99,14 @@ func (tree *BinaryTree) Contains(element interface{}) bool {
 func (tree *BinaryTree) Add(element interface{}) error {
 	tree.mutex.Lock()
 	defer tree.mutex.Unlock()
+	tree.check()
 	return tree.add(element)
 }
 
 func (tree *BinaryTree) add(element interface{}) error {
 	if tree.Head == nil {
 		tree.Head = NewBinaryTreeNode(element)
-		tree.Size++
+		tree.size++
 		return nil
 	} else {
 		currentNode, _, dif, err := tree.near(element)
@@ -97,11 +117,11 @@ func (tree *BinaryTree) add(element interface{}) error {
 			return errors.New("The input element is equal to an element in tree")
 		} else if dif > 0 {
 			currentNode.Right = NewBinaryTreeNode(element)
-			tree.Size++
+			tree.size++
 			return nil
 		} else {
 			currentNode.Left = NewBinaryTreeNode(element)
-			tree.Size++
+			tree.size++
 			return nil
 		}
 	}
@@ -135,6 +155,7 @@ func (tree *BinaryTree) Search(element interface{}) (interface{}, error) {
 func (tree *BinaryTree) Remove(element interface{}) error {
 	tree.mutex.Lock()
 	defer tree.mutex.Unlock()
+	tree.check()
 	node, parent, dif, err := tree.near(element)
 	if err != nil {
 		return err
@@ -165,20 +186,22 @@ func (tree *BinaryTree) remove(node *BinaryTreeNode, parent *BinaryTreeNode) err
 			return errors.New("No parent relation on input parameters")
 		}
 	}
-	tree.Size--
+	tree.size--
 	return nil
 }
 
 func (tree *BinaryTree) GetSize() int {
 	tree.mutex.RLock()
 	defer tree.mutex.RUnlock()
-	return tree.Size
+	tree.check()
+	return tree.size
 }
 
 func (tree *BinaryTree) ToArray() []interface{} {
 	tree.mutex.RLock()
 	defer tree.mutex.RUnlock()
-	array := make([]interface{}, tree.Size)
+	tree.check()
+	array := make([]interface{}, tree.size)
 	tree.Visit(func(element interface{}, i int) {
 		array[i] = element
 	})
@@ -188,8 +211,9 @@ func (tree *BinaryTree) ToArray() []interface{} {
 func (tree *BinaryTree) ToArrayOfType(elementType reflect.Type) interface{} {
 	tree.mutex.RLock()
 	defer tree.mutex.RUnlock()
+	tree.check()
 	var value reflect.Value
-	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), tree.Size, tree.Size)
+	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), tree.size, tree.size)
 	tree.Visit(func(element interface{}, i int) {
 		value = reflect.ValueOf(element)
 		arrayValue.Index(i).Set(value)

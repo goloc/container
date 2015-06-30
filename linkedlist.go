@@ -10,9 +10,9 @@ import (
 )
 
 type LinkedList struct {
-	Size     int
 	Head     *LinkedListItem
-	Ultimate *LinkedListItem
+	size     int
+	ultimate *LinkedListItem
 	mutex    sync.RWMutex
 }
 
@@ -24,6 +24,19 @@ func NewLinkedList() *LinkedList {
 type LinkedListItem struct {
 	Element interface{}
 	Next    *LinkedListItem
+}
+
+func (list *LinkedList) check() {
+	if list.ultimate == nil || list.size <= 0 {
+		list.ultimate = nil
+		list.size = 0
+		item := list.Head
+		for item != nil {
+			list.size++
+			list.ultimate = item
+			item = item.Next
+		}
+	}
 }
 
 func (list *LinkedList) Contains(element interface{}) bool {
@@ -39,22 +52,24 @@ func (list *LinkedList) Contains(element interface{}) bool {
 func (list *LinkedList) Add(element interface{}) error {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()
+	list.check()
 	li := new(LinkedListItem)
 	li.Element = element
 	if list.Head == nil {
 		list.Head = li
-		list.Ultimate = list.Head
+		list.ultimate = list.Head
 	} else {
-		list.Ultimate.Next = li
-		list.Ultimate = list.Ultimate.Next
+		list.ultimate.Next = li
+		list.ultimate = list.ultimate.Next
 	}
-	list.Size++
+	list.size++
 	return nil
 }
 
 func (list *LinkedList) Search(element interface{}) (interface{}, error) {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
+	list.check()
 	item, _, err := list.search(element)
 	if err != nil {
 		return nil, err
@@ -78,6 +93,7 @@ func (list *LinkedList) search(element interface{}) (*LinkedListItem, *LinkedLis
 func (list *LinkedList) Remove(element interface{}) error {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()
+	list.check()
 	item, parent, err := list.search(element)
 	if err != nil {
 		return err
@@ -90,20 +106,22 @@ func (list *LinkedList) Remove(element interface{}) error {
 		}
 		parent.Next = item.Next
 	}
-	list.Size--
+	list.size--
 	return nil
 }
 
 func (list *LinkedList) GetSize() int {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
-	return list.Size
+	list.check()
+	return list.size
 }
 
 func (list *LinkedList) ToArray() []interface{} {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
-	array := make([]interface{}, list.Size)
+	list.check()
+	array := make([]interface{}, list.size)
 	list.Visit(func(element interface{}, i int) {
 		array[i] = element
 	})
@@ -113,8 +131,9 @@ func (list *LinkedList) ToArray() []interface{} {
 func (list *LinkedList) ToArrayOfType(elementType reflect.Type) interface{} {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
+	list.check()
 	var value reflect.Value
-	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), list.Size, list.Size)
+	arrayValue := reflect.MakeSlice(reflect.SliceOf(elementType), list.size, list.size)
 	list.Visit(func(element interface{}, i int) {
 		value = reflect.ValueOf(element)
 		arrayValue.Index(i).Set(value)

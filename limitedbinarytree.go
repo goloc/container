@@ -3,8 +3,6 @@
 // license that can be found in the LICENSE file.
 package container
 
-import ()
-
 type LimitedBinaryTree struct {
 	BinaryTree
 	Limit       int
@@ -22,7 +20,8 @@ func NewLimitedBinaryTree(compare Compare, limit int, preserveMin bool) *Limited
 func (tree *LimitedBinaryTree) Add(element interface{}) error {
 	tree.mutex.Lock()
 	defer tree.mutex.Unlock()
-	if tree.Size >= tree.Limit {
+	tree.check()
+	if tree.size >= tree.Limit {
 		if tree.PreserveMin {
 			max, parent := tree.Head.right()
 			if tree.CompareFunc(element, max.Element) >= 0 {
