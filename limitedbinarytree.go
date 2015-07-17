@@ -24,14 +24,14 @@ func (tree *LimitedBinaryTree) Add(element interface{}) error {
 	if tree.size >= tree.Limit {
 		if tree.PreserveMin {
 			max, parent := tree.Head.right()
-			if tree.CompareFunc(element, max.Element) >= 0 {
+			if tree.compareFunc(element, max.Element) >= 0 {
 				return nil
 			} else {
 				tree.remove(max, parent)
 			}
 		} else {
 			min, parent := tree.Head.left()
-			if tree.CompareFunc(element, min.Element) <= 0 {
+			if tree.compareFunc(element, min.Element) <= 0 {
 				return nil
 			} else {
 				tree.remove(min, parent)

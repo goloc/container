@@ -13,7 +13,7 @@ func TestLinkedlist(t *testing.T) {
 	list.Add(1)
 	list.Add(2)
 	list.Add(3)
-	if list.GetSize() != 3 {
+	if list.Size() != 3 {
 		t.Fail()
 	}
 
@@ -37,25 +37,44 @@ func TestLinkedlist(t *testing.T) {
 		}
 	}
 
-	v, err := list.Search(2)
+	v, err := list.Get(0)
+	if v != 1 || err != nil {
+		t.Fail()
+	}
+	v, err = list.Get(1)
 	if v != 2 || err != nil {
 		t.Fail()
 	}
-	v, err = list.Search(60)
+	v, err = list.Get(2)
+	if v != 3 || err != nil {
+		t.Fail()
+	}
+	v, err = list.Get(3)
 	if v != nil || err == nil {
 		t.Fail()
 	}
 
 	list.Add(4)
 	list.Add(5)
-	if list.GetSize() != 5 {
+	if list.Size() != 5 {
 		t.Fail()
 	}
 
-	list.Remove(2)
+	list.Remove(1)
+	if list.Size() != 4 {
+		t.Fail()
+	}
 
-	v, err = list.Search(2)
-	if v != nil || err == nil {
+	v, err = list.Get(1)
+	if v != 3 || err != nil {
+		t.Fail()
+	}
+	v, err = list.Get(2)
+	if v != 4 || err != nil {
+		t.Fail()
+	}
+	v, err = list.Get(3)
+	if v != 5 || err != nil {
 		t.Fail()
 	}
 	arrayInt = list.ToArrayOfType(reflect.TypeOf(0)).([]int)

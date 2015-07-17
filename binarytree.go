@@ -12,7 +12,7 @@ import (
 type Compare func(interface{}, interface{}) int
 
 type BinaryTree struct {
-	CompareFunc Compare
+	compareFunc Compare
 	Head        *BinaryTreeNode
 	size        int
 	mutex       sync.RWMutex
@@ -20,7 +20,7 @@ type BinaryTree struct {
 
 func NewBinaryTree(compare Compare) *BinaryTree {
 	tree := new(BinaryTree)
-	tree.CompareFunc = compare
+	tree.compareFunc = compare
 	return tree
 }
 
@@ -35,6 +35,10 @@ func NewBinaryTreeNode(element interface{}) *BinaryTreeNode {
 	return node
 }
 
+func (tree *BinaryTree) SetCompareFunc(compare Compare) {
+	tree.compareFunc = compare
+}
+
 func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeNode, int, error) {
 	var dif int
 	var parent *BinaryTreeNode
@@ -43,7 +47,7 @@ func (tree *BinaryTree) near(element interface{}) (*BinaryTreeNode, *BinaryTreeN
 		return nil, nil, 1, errors.New("No head")
 	}
 	for {
-		dif = tree.CompareFunc(element, current.Element)
+		dif = tree.compareFunc(element, current.Element)
 		if dif == 0 {
 			return current, parent, dif, nil
 		} else if dif > 0 {
@@ -114,7 +118,8 @@ func (tree *BinaryTree) add(element interface{}) error {
 			return err
 		}
 		if dif == 0 {
-			return errors.New("The input element is equal to an element in tree")
+			currentNode.Element = element
+			return nil
 		} else if dif > 0 {
 			currentNode.Right = NewBinaryTreeNode(element)
 			tree.size++
@@ -138,7 +143,7 @@ func (tree *BinaryTree) join(node1 *BinaryTreeNode, node2 *BinaryTreeNode) *Bina
 	return node1
 }
 
-func (tree *BinaryTree) Search(element interface{}) (interface{}, error) {
+func (tree *BinaryTree) Get(element interface{}) (interface{}, error) {
 	tree.mutex.RLock()
 	defer tree.mutex.RUnlock()
 	node, _, dif, err := tree.near(element)
@@ -190,7 +195,7 @@ func (tree *BinaryTree) remove(node *BinaryTreeNode, parent *BinaryTreeNode) err
 	return nil
 }
 
-func (tree *BinaryTree) GetSize() int {
+func (tree *BinaryTree) Size() int {
 	tree.mutex.RLock()
 	defer tree.mutex.RUnlock()
 	tree.check()

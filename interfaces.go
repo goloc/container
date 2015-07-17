@@ -10,9 +10,9 @@ import (
 type Container interface {
 	Contains(interface{}) bool
 	Add(interface{}) error
-	GetSize() int
-	Search(interface{}) (interface{}, error)
+	Get(interface{}) (interface{}, error)
 	Remove(interface{}) error
+	Size() int
 	ToArray() []interface{}
 	ToArrayOfType(reflect.Type) interface{}
 	Visit(func(interface{}, int))

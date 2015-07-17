@@ -21,7 +21,7 @@ func TestBinarytree(t *testing.T) {
 	tree.Add(1)
 	tree.Add(5)
 	tree.Add(7)
-	if tree.GetSize() != 9 {
+	if tree.Size() != 9 {
 		t.Fail()
 	}
 
@@ -45,11 +45,11 @@ func TestBinarytree(t *testing.T) {
 		}
 	}
 
-	v, err := tree.Search(5)
+	v, err := tree.Get(5)
 	if v != 5 || err != nil {
 		t.Fail()
 	}
-	v, err = tree.Search(60)
+	v, err = tree.Get(60)
 	if v != nil || err == nil {
 		t.Fail()
 	}
@@ -60,31 +60,31 @@ func TestBinarytree(t *testing.T) {
 	tree.Add(14)
 	tree.Add(12)
 	tree.Add(13)
-	if tree.GetSize() != 15 {
+	if tree.Size() != 15 {
 		t.Fail()
 	}
 
 	err = tree.Add(8)
-	if err == nil {
+	if err != nil {
 		t.Fail()
 	}
-	if tree.GetSize() != 15 {
+	if tree.Size() != 15 {
 		t.Fail()
 	}
 
-	v, err = tree.Search(8)
+	v, err = tree.Get(8)
 	if v != 8 || err != nil {
 		t.Fail()
 	}
-	v, err = tree.Search(6)
+	v, err = tree.Get(6)
 	if v != 6 || err != nil {
 		t.Fail()
 	}
-	v, err = tree.Search(1)
+	v, err = tree.Get(1)
 	if v != 1 || err != nil {
 		t.Fail()
 	}
-	v, err = tree.Search(15)
+	v, err = tree.Get(15)
 	if v != 15 || err != nil {
 		t.Fail()
 	}
@@ -94,23 +94,23 @@ func TestBinarytree(t *testing.T) {
 	tree.Remove(1)
 	tree.Remove(15)
 
-	v, err = tree.Search(8)
+	v, err = tree.Get(8)
 	if v != nil || err == nil {
 		t.Fail()
 	}
-	v, err = tree.Search(6)
+	v, err = tree.Get(6)
 	if v != nil || err == nil {
 		t.Fail()
 	}
-	v, err = tree.Search(1)
+	v, err = tree.Get(1)
 	if v != nil || err == nil {
 		t.Fail()
 	}
-	v, err = tree.Search(15)
+	v, err = tree.Get(15)
 	if v != nil || err == nil {
 		t.Fail()
 	}
-	if tree.GetSize() != 11 {
+	if tree.Size() != 11 {
 		t.Fail()
 	}
 	arrayInt = tree.ToArrayOfType(reflect.TypeOf(0)).([]int)

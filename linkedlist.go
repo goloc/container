@@ -39,14 +39,24 @@ func (list *LinkedList) check() {
 	}
 }
 
-func (list *LinkedList) Contains(element interface{}) bool {
+func (list *LinkedList) Contains(elementId interface{}) bool {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
-	_, _, err := list.search(element)
-	if err != nil {
+	list.check()
+	id := elementId.(int)
+	if id >= list.size || list.size <= 0 {
 		return false
 	}
-	return true
+	i := 0
+	item := list.Head
+	for item != nil {
+		if i == id {
+			return true
+		}
+		i++
+		item = item.Next
+	}
+	return false
 }
 
 func (list *LinkedList) Add(element interface{}) error {
@@ -66,51 +76,53 @@ func (list *LinkedList) Add(element interface{}) error {
 	return nil
 }
 
-func (list *LinkedList) Search(element interface{}) (interface{}, error) {
+func (list *LinkedList) Get(elementId interface{}) (interface{}, error) {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
 	list.check()
-	item, _, err := list.search(element)
-	if err != nil {
-		return nil, err
+	id := elementId.(int)
+	if id >= list.size || list.size <= 0 {
+		return nil, errors.New("Index is out ouf bound")
 	}
-	return item.Element, err
-}
-
-func (list *LinkedList) search(element interface{}) (*LinkedListItem, *LinkedListItem, error) {
-	var prev *LinkedListItem
+	i := 0
 	item := list.Head
 	for item != nil {
-		if item.Element == element {
-			return item, prev, nil
+		if i == id {
+			return item.Element, nil
 		}
-		prev = item
+		i++
 		item = item.Next
 	}
-	return nil, nil, errors.New("Element not found")
+	return nil, errors.New("Element not found")
 }
 
-func (list *LinkedList) Remove(element interface{}) error {
+func (list *LinkedList) Remove(elementId interface{}) error {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()
 	list.check()
-	item, parent, err := list.search(element)
-	if err != nil {
-		return err
+	list.check()
+	id := elementId.(int)
+	if id >= list.size || list.size <= 0 {
+		return errors.New("Index is out ouf bound")
 	}
-	if item == list.Head {
-		list.Head = item.Next
-	} else {
-		if parent == nil {
-			return errors.New("Parent node mandatory for non head node")
+	i := 0
+	var prev *LinkedListItem
+	item := list.Head
+	for item != nil {
+		if i == id {
+			prev.Next = item.Next
+			list.size--
+			return nil
 		}
-		parent.Next = item.Next
+		i++
+		prev = item
+		item = item.Next
 	}
-	list.size--
+	return errors.New("Element not found")
 	return nil
 }
 
-func (list *LinkedList) GetSize() int {
+func (list *LinkedList) Size() int {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
 	list.check()

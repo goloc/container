@@ -21,7 +21,7 @@ func TestLimitedbinarytreePreserveMin(t *testing.T) {
 	tree.Add(1)
 	tree.Add(5)
 	tree.Add(7)
-	if tree.GetSize() != 5 {
+	if tree.Size() != 5 {
 		t.Fail()
 	}
 	array := tree.ToArrayOfType(reflect.TypeOf(0)).([]int)
@@ -48,7 +48,7 @@ func TestLimitedbinarytreePreserveMax(t *testing.T) {
 	tree.Add(1)
 	tree.Add(5)
 	tree.Add(7)
-	if tree.GetSize() != 5 {
+	if tree.Size() != 5 {
 		t.Fail()
 	}
 	array := tree.ToArrayOfType(reflect.TypeOf(0)).([]int)
