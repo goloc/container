@@ -32,7 +32,7 @@ func (m *Map) Contains(key interface{}) bool {
 		return false
 	}
 	for k, _ := range m.Map {
-		if k == key {
+		if reflect.DeepEqual(k, key) {
 			return true
 		}
 	}
@@ -65,9 +65,9 @@ func (m *Map) Remove(key interface{}) error {
 	defer m.mutex.Unlock()
 	v := m.Map[key]
 	if v == nil {
-		errors.New("Element not found")
+		return errors.New("Element not found")
 	}
-	m.Map[key] = nil
+	delete(m.Map, key)
 	return nil
 }
 

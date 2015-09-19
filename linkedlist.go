@@ -39,21 +39,15 @@ func (list *LinkedList) check() {
 	}
 }
 
-func (list *LinkedList) Contains(elementId interface{}) bool {
+func (list *LinkedList) Contains(element interface{}) bool {
 	list.mutex.RLock()
 	defer list.mutex.RUnlock()
 	list.check()
-	id := elementId.(int)
-	if id >= list.size || list.size <= 0 {
-		return false
-	}
-	i := 0
 	item := list.Head
 	for item != nil {
-		if i == id {
+		if reflect.DeepEqual(item.Element, element) {
 			return true
 		}
-		i++
 		item = item.Next
 	}
 	return false
@@ -100,9 +94,8 @@ func (list *LinkedList) Remove(elementId interface{}) error {
 	list.mutex.Lock()
 	defer list.mutex.Unlock()
 	list.check()
-	list.check()
 	id := elementId.(int)
-	if id >= list.size || list.size <= 0 {
+	if id >= list.size || list.size < 0 {
 		return errors.New("Index is out ouf bound")
 	}
 	i := 0
@@ -110,7 +103,11 @@ func (list *LinkedList) Remove(elementId interface{}) error {
 	item := list.Head
 	for item != nil {
 		if i == id {
-			prev.Next = item.Next
+			if i == 0 {
+				list.Head = item.Next
+			} else {
+				prev.Next = item.Next
+			}
 			list.size--
 			return nil
 		}

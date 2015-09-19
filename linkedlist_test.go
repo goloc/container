@@ -54,14 +54,30 @@ func TestLinkedlist(t *testing.T) {
 		t.Fail()
 	}
 
+	if list.Contains(1) != true {
+		t.Fail()
+	}
+	if list.Contains(2) != true {
+		t.Fail()
+	}
+	if list.Contains(3) != true {
+		t.Fail()
+	}
+	if list.Contains(4) != false {
+		t.Fail()
+	}
+
 	list.Add(4)
 	list.Add(5)
 	if list.Size() != 5 {
 		t.Fail()
 	}
 
-	list.Remove(1)
+	list.Remove(0)
 	if list.Size() != 4 {
+		t.Fail()
+	}
+	if list.Contains(1) != false {
 		t.Fail()
 	}
 
@@ -81,4 +97,5 @@ func TestLinkedlist(t *testing.T) {
 	if len(arrayInt) != 4 {
 		t.Fail()
 	}
+
 }
