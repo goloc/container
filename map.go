@@ -28,15 +28,8 @@ func NewMap() *Map {
 func (m *Map) Contains(key interface{}) bool {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
-	if len(m.Map) <= 0 {
-		return false
-	}
-	for k, _ := range m.Map {
-		if reflect.DeepEqual(k, key) {
-			return true
-		}
-	}
-	return false
+	_, ok := m.Map[key]
+	return ok
 }
 
 func (m *Map) Add(keyValue interface{}) error {
@@ -53,18 +46,18 @@ func (m *Map) Add(keyValue interface{}) error {
 func (m *Map) Get(key interface{}) (interface{}, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
-	v := m.Map[key]
-	if v == nil {
+	v, ok := m.Map[key]
+	if ok == false {
 		return nil, errors.New("Element not found")
 	}
-	return v, nil
+	return &KeyValue{Key: key, Value: v}, nil
 }
 
 func (m *Map) Remove(key interface{}) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	v := m.Map[key]
-	if v == nil {
+	_, ok := m.Map[key]
+	if ok == false {
 		return errors.New("Element not found")
 	}
 	delete(m.Map, key)

@@ -23,15 +23,7 @@ func NewSet() *Set {
 func (s *Set) Contains(element interface{}) bool {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
-	if len(s.Map) <= 0 {
-		return false
-	}
-	for k, _ := range s.Map {
-		if reflect.DeepEqual(k, element) {
-			return true
-		}
-	}
-	return false
+	return s.Map[element]
 }
 
 func (s *Set) Add(element interface{}) error {
@@ -73,8 +65,8 @@ func (s *Set) ToArray() []interface{} {
 	defer s.mutex.RUnlock()
 	array := make([]interface{}, len(s.Map))
 	i := 0
-	for k, v := range s.Map {
-		array[i] = &KeyValue{Key: k, Value: v}
+	for k, _ := range s.Map {
+		array[i] = k
 		i++
 	}
 	return array
